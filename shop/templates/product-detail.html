@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - My Online Shop</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="navbar">
+        <div class="logo">
+            My Store
+        </div>
+
+        <nav class="nav-links">
+            <!-- Admin Links -->
+            {% if session.get('admin_logged_in') %}
+                <a href="{{ url_for('upload') }}" class="admin-link">➕ Add Product</a>
+                <a href="{{ url_for('admin_logout') }}" class="admin-link">🚪 Logout ({{ session.get('admin_username') }})</a>
+            {% else %}
+                <a href="{{ url_for('admin_login') }}" class="admin-link">🔐 Admin</a>
+            {% endif %}
+        </nav>
+
+        <div class="cart-icon" id="cart-btn">
+            🛒 Cart (<span id="cart-count">0</span>)
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                        <span class="flash-close" onclick="this.parentElement.style.display='none'">&times;</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- PRODUCT DETAIL -->
+    <main class="product-detail-container">
+        
+        <div class="product-detail-card">
+            
+            <!-- Product Image -->
+            <div class="product-detail-image">
+                {% if product.image %}
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + product.image) }}"
+                        alt="{{ product.name }}"
+                        onerror="this.src='{{ url_for('static', filename='images/placeholder.jpg') }}'"
+                    >
+                {% else %}
+                    <div class="no-image">No Image Available</div>
+                {% endif %}
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-detail-info">
+                
+                <h1>{{ product.name }}</h1>
+                
+                {% if product.description %}
+                    <p class="detail-description">{{ product.description }}</p>
+                {% else %}
+                    <p class="detail-description">No description available.</p>
+                {% endif %}
+                
+                <p class="detail-price">KSh {{ "{:,.0f}".format(product.price) }}</p>
+                
+                <!-- Action Buttons -->
+                <div class="detail-actions">
+                    <button
+                        class="add-to-cart-btn"
+                        data-id="{{ product.id }}"
+                        data-name="{{ product.name }}"
+                        data-price="{{ product.price }}"
+                        data-image="{{ product.image if product.image else '' }}"
+                    >
+                        🛒 Add to Cart
+                    </button>
+                    
+                    {% if session.get('admin_logged_in') %}
+                        <button 
+                            class="delete-btn"
+                            onclick="confirmDelete({{ product.id }}, '{{ product.name }}')"
+                        >
+                            🗑️ Delete Product
+                        </button>
+                    {% endif %}
+                </div>
+                
+                <a href="{{ url_for('index') }}" class="back-link">← Back to Products</a>
+                
+            </div>
+            
+        </div>
+        
+    </main>
+
+    <!-- CART -->
+    <aside class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button id="close-cart">&times;</button>
+        </div>
+
+        <div class="cart-items" id="cart-items">
+            <p class="empty-msg">Your cart is empty.</p>
+        </div>
+
+        <div class="cart-footer">
+            <h3>Total: KSh <span id="cart-total">0.00</span></h3>
+            <button class="checkout-btn" onclick="checkoutOnWhatsApp()">
+                💬 Checkout on WhatsApp
+            </button>
+        </div>
+    </aside>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    {% if session.get('admin_logged_in') %}
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete "<span id="deleteProductName"></span>"?</p>
+            <p class="warning">⚠️ This action cannot be undone!</p>
+            <div class="modal-actions">
+                <button onclick="closeDeleteModal()" class="cancel-btn">Cancel</button>
+                <button id="confirmDeleteBtn" class="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- JAVASCRIPT -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <!-- Admin-specific JavaScript -->
+    {% if session.get('admin_logged_in') %}
+    <script>
+        function confirmDelete(productId, productName) {
+            const modal = document.getElementById('deleteModal');
+            document.getElementById('deleteProductName').textContent = productName;
+            modal.style.display = 'flex';
+            
+            document.getElementById('confirmDeleteBtn').onclick = function() {
+                window.location.href = '/delete_product/' + productId;
+            };
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+    {% endif %}
+
+</body>
+</html>

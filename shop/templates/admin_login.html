@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">My Store - Admin</div>
+        <a href="/" style="color:white; text-decoration:none;">🏠 Store</a>
+    </header>
+    
+    <main style="max-width:400px; margin:50px auto; padding:20px;">
+        <h1>🔐 Admin Login</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p style="color: {% if category == 'error' %}red{% else %}green{% endif %}; text-align:center;">
+                        {{ message }}
+                    </p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST">
+            <div style="margin-bottom:15px;">
+                <label>Username:</label><br>
+                <input type="text" name="username" required style="width:100%; padding:8px;">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label>Password:</label><br>
+                <input type="password" name="password" required style="width:100%; padding:8px;">
+            </div>
+            <button type="submit" style="width:100%; padding:10px; background:#007bff; color:white; border:none; cursor:pointer;">
+                🔑 Login
+            </button>
+        </form>
+        <p style="text-align:center; margin-top:20px;">
+            <a href="/">← Back to Store</a>
+        </p>
+    </main>
+</body>
+</html>

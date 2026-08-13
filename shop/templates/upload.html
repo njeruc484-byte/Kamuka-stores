@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - My Shop</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        
+        .navbar { 
+            background: #333; color: white; padding: 12px 25px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            flex-wrap: wrap;
+        }
+        .navbar .logo { font-size: 20px; font-weight: bold; }
+        .navbar a { 
+            color: white; text-decoration: none; margin-left: 12px; 
+            padding: 6px 12px; border-radius: 4px; font-size: 14px; 
+        }
+        .navbar a:hover { background: rgba(255,255,255,0.2); }
+        .navbar .store-link { background: #007bff; }
+        .navbar .store-link:hover { background: #0056b3; }
+        
+        .hero { 
+            text-align: center; padding: 25px 20px; 
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white; 
+        }
+        .hero h1 { font-size: 26px; }
+        .hero p { font-size: 15px; opacity: 0.9; }
+        
+        .flash-message { 
+            padding: 10px; margin: 8px auto; max-width: 800px; 
+            border-radius: 5px; text-align: center; font-size: 14px;
+        }
+        .flash-success { background: #d4edda; color: #155724; }
+        .flash-error { background: #f8d7da; color: #721c24; }
+        .flash-warning { background: #fff3cd; color: #856404; }
+        .flash-info { background: #d1ecf1; color: #0c5460; }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        
+        .upload-form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-form h2 { 
+            font-size: 20px; 
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            color: #555; 
+            font-size: 14px;
+        }
+        .form-group input, 
+        .form-group textarea { 
+            width: 100%; 
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px; 
+            font-family: Arial, sans-serif;
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-group input:focus, 
+        .form-group textarea:focus { 
+            outline: none; 
+            border-color: #007bff; 
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+        }
+        .form-group small { 
+            color: #666; 
+            font-size: 12px; 
+            display: block; 
+            margin-top: 3px; 
+        }
+        
+        .upload-btn { 
+            width: 100%; 
+            padding: 10px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            font-size: 15px; 
+            cursor: pointer; 
+        }
+        .upload-btn:hover { background: #218838; }
+        
+        .product-list {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-list h2 { 
+            font-size: 20px; 
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 10px;
+        }
+        .product-list .subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-top: -15px;
+            margin-bottom: 15px;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .product-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s;
+        }
+        .product-item:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .product-item-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        .product-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .product-item-details {
+            flex: 1;
+        }
+        .product-item-details .name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        .product-item-details .price {
+            font-size: 13px;
+            color: #28a745;
+        }
+        .product-item-details .id {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .product-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .product-item-actions button,
+        .product-item-actions a {
+            padding: 5px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn-view {
+            background: #17a2b8;
+        }
+        .btn-view:hover {
+            background: #138496;
+        }
+        .btn-delete {
+            background: #dc3545;
+        }
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+        
+        .no-products-msg {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 15px;
+        }
+        .no-products-msg .big-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        /* Modal */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .modal.show { display: flex; }
+        .modal-content { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            text-align: center; 
+            max-width: 400px; 
+            width: 90%; 
+        }
+        .modal-content .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .modal-content h3 { 
+            font-size: 20px; 
+            margin-bottom: 10px;
+        }
+        .modal-content p {
+            color: #666;
+            margin: 10px 0;
+        }
+        .modal-content .product-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .modal-actions { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 20px; 
+            justify-content: center; 
+        }
+        .cancel-btn { 
+            padding: 8px 25px; 
+            background: #6c757d; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .cancel-btn:hover { background: #5a6268; }
+        .confirm-delete-btn { 
+            padding: 8px 25px; 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .confirm-delete-btn:hover { background: #c82333; }
+        .warning { 
+            color: #dc3545; 
+            font-weight: bold; 
+            margin: 10px 0; 
+            font-size: 14px; 
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+            .product-item {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .product-item-info {
+                width: 100%;
+            }
+            .product-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+        @media (max-width: 480px) {
+            .navbar { padding: 10px 15px; }
+            .navbar .logo { font-size: 17px; }
+            .navbar a { font-size: 12px; padding: 5px 10px; }
+            .hero { padding: 20px 15px; }
+            .hero h1 { font-size: 20px; }
+            .upload-form, .product-list { padding: 15px; }
+            .product-item img { width: 40px; height: 40px; }
+            .product-item-details .name { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo">⚙️ Admin Panel</div>
+        <nav>
+            <a href="{{ url_for('index') }}" class="store-link">🏠 Store</a>
+            <a href="{{ url_for('admin_logout') }}">🚪 Logout</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>📦 Manage Your Products</h1>
+        <p>Add new products or delete existing ones</p>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="admin-container">
+        <!-- Upload Form -->
+        <div class="upload-form">
+            <h2>➕ Add New Product</h2>
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="name">Product Name *</label>
+                    <input type="text" id="name" name="name" placeholder="Enter product name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3" placeholder="Enter product description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price (KSh) *</label>
+                    <input type="number" id="price" name="price" step="0.01" min="0" placeholder="Enter price" required>
+                </div>
+                <div class="form-group">
+                    <label for="image">Product Image *</label>
+                    <input type="file" id="image" name="image" accept="image/*" required>
+                    <small>Allowed: PNG, JPG, JPEG, GIF, WEBP (Max 10MB)</small>
+                </div>
+                <button type="submit" class="upload-btn">📤 Upload Product</button>
+            </form>
+        </div>
+
+        <!-- Product List -->
+        <div class="product-list">
+            <h2>🗑️ Manage Products</h2>
+            <p class="subtitle">Click Delete to remove a product from your store</p>
+            <div class="product-grid">
+                {% if products %}
+                    {% for product in products %}
+                        <div class="product-item">
+                            <div class="product-item-info">
+                                {% if product.image %}
+                                    <img src="{{ url_for('static', filename='uploads/' + product.image) }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <div style="width:50px; height:50px; background:#f0f0f0; border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#999;">No img</div>
+                                {% endif %}
+                                <div class="product-item-details">
+                                    <div class="name">{{ product.name }}</div>
+                                    <div class="price">KSh {{ "{:,.0f}".format(product.price) }}</div>
+                                    <div class="id">ID: #{{ product.id }}</div>
+                                </div>
+                            </div>
+                            <div class="product-item-actions">
+                                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn-view" target="_blank">👁️ View</a>
+                                <button class="btn-delete" onclick="deleteProduct({{ product.id }}, '{{ product.name }}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-products-msg">
+                        <span class="big-icon">📭</span>
+                        <p>No products available.</p>
+                        <p style="font-size:13px; margin-top:5px;">Add your first product using the form on the left!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="icon">⚠️</div>
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete:</p>
+            <p class="product-name" id="deleteProductName"></p>
+            <p class="warning">This action cannot be undone!</p>
+            <div class="modal-actions">
+                <button onclick="closeModal()" class="cancel-btn">Cancel</button>
+                <button onclick="confirmDelete()" class="confirm-delete-btn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DELETE PRODUCT
+        // ============================================
+
+        let deleteProductId = null;
+        let deleteProductName = '';
+
+        function deleteProduct(id, name) {
+            deleteProductId = id;
+            deleteProductName = name;
+            document.getElementById('deleteProductName').textContent = name;
+            document.getElementById('deleteModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteProductId = null;
+            deleteProductName = '';
+            document.body.style.overflow = '';
+        }
+
+        function confirmDelete() {
+            if (deleteProductId) {
+                window.location.href = '/delete_product/' + deleteProductId;
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('deleteModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        console.log('✅ Admin panel loaded');
+        console.log('📦 Products in database:', {{ products|length if products else 0 }});
+    </script>
+
+</body>
+</html>
