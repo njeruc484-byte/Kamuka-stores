@@ -3,9 +3,7 @@ name: Deploy Flask Shop
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # Allow manual deployment
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -20,44 +18,20 @@ jobs:
       with:
         python-version: '3.11'
     
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-    
     - name: Install dependencies
+      working-directory: shop
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Run tests (if any)
+    - name: Test application
+      working-directory: shop
       run: |
-        python -m pytest tests/ || echo "No tests found"
+        python -c "import app; print('App imports successfully')"
     
-    - name: Deploy to VPS via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        port: ${{ secrets.VPS_PORT || 22 }}
-        script: |
-          cd /var/www/flask-shop
-          
-          # Pull latest changes
-          git pull origin main
-          
-          # Activate virtual environment
-          source venv/bin/activate
-          
-          # Install/update dependencies
-          pip install -r requirements.txt
-          
-          # Restart the service
-          sudo systemctl restart flask-shop
-          
-          # Check service status
-          sudo systemctl status flask-shop --no-pager
+    - name: List files
+      run: |
+        echo "Root directory:"
+        ls -la
+        echo "Shop directory:"
+        ls -la shop/
